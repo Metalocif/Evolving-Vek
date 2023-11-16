@@ -1,0 +1,12 @@
+v1.1
+- Added the following prefixes: Burrowing, Light, Splitting, Oozing, Infectious, Regenerating, Wrathful, Tyrannical.
+  - Figured out a cool trick to trigger effects at the start of a prefixed Vek's movement, enabling most of the above.
+- Armored, Volatile, and four of the new ones can be given if a condition is met (psion presence/goo boss mission).
+- Added mod options to individually disable prefixes and alter prefixing conditions.
+  - This also serves as a way to explain in-game what each prefix actually does.
+- May have fixed a strange bug where some prefixed Vek were not found in _G.
+  - It seemed the bug only triggered when I tried altering two Vek in the same missionStartHook.
+  - So I only prefix one at the start of a mission; less overwhelming this way anyway.
+  - Added an extra failsafe for it, just in case.
+- Related: prefixed enemies at the start of a mission correctly emerge instead of standing in their starting tile.
+- Vek that are frozen at the end of a mission no longer become evolved Vek.

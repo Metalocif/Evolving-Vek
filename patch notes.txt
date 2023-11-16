@@ -1,3 +1,6 @@
+v1.1.1
+- Added a failsafe to spawn alteration.
+
 v1.1
 - Added the following prefixes: Burrowing, Light, Splitting, Oozing, Infectious, Regenerating, Wrathful, Tyrannical.
   - Figured out a cool trick to trigger effects at the start of a prefixed Vek's movement, enabling most of the above.

@@ -81,10 +81,12 @@ end
 -- function Webbing()
 	-- modApi:conditionalHook(
 		-- function()
+			-- GAME.WebbingPawnId = Pawn:GetId()
 			-- return Pawn and Pawn:IsQueued() and string.find(Pawn:GetType(), "Webbing") 
 		-- end,
 		-- function()
 			-- LOG("start webbing from "..Pawn:GetSpace():GetString())
+			-- LOG("will look according to Id: "..Board:GetPawn(GAME.WebbingPawnId):GetType())
 			-- ret = SkillEffect()
 			-- for i = DIR_START, DIR_END do
 				-- local curr = Pawn:GetSpace() + DIR_VECTORS[i]
@@ -255,7 +257,7 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 	local options = mod_loader.currentModContent[mod.id].options
 	if options["PrefixSpawns"] and not options["PrefixSpawns"].enabled then return false end
 	for i = 1, #GAME.EvolvedVeks do
-		if GAME.EvolvedVeks[i].Type == spawnData.type and GAME.EvolvedVeks[i].Remaining > 0 then
+		if GAME.EvolvedVeks[i].Type == spawnData.type and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
 			--mission:ModifySpawnPoint(spawnData.location, {location = spawnData.location, type = GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type})
 			mission:ChangeSpawnPointPawnType(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
 			-- mission:RemoveSpawnPoint(spawnData.location)

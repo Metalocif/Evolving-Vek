@@ -191,7 +191,7 @@ function GeneratePrefix(pawn)
 	repeat
 		prefix = prefixes[math.random(#prefixes)]
 	until IsPrefixValidForVek(prefix, pawn:GetType())
-	return "Stable" --prefix
+	return prefix
 end
 
 function AreSameFamily(type1, type2)
@@ -238,7 +238,7 @@ local function HOOK_MissionStart(mission)
 		local pawn = Board:GetPawn(tile)
 		if pawn and pawn:GetTeam() == TEAM_ENEMY and pawn:GetTeam() ~= TEAM_BOTS then
 			for i = 1, #GAME.EvolvedVeks do
-				if _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name == "Missing Mod" then Board:Ping(tile, COLOR_BLACK) LOG("prevented missing mod for "..GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type) end
+				if _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name == "Missing Mod" then LOG("prevented missing mod for "..GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type) end
 				if GAME.EvolvedVeks[i].Type == pawn:GetType() and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
 					Board:RemovePawn(tile)
 					Board:AddPawn(GAME.EvolvedVeks[i].Prefix..pawn:GetType(), tile)

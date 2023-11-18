@@ -1,3 +1,5 @@
+local mod = modApi:getCurrentMod()
+
 function IsPrefixValidForVek(prefix, vekType)
 	local options = mod_loader.currentModContent[mod.id].options
 	if options["Enable"..prefix] and not options["Enable"..prefix].enabled then return false end
@@ -253,17 +255,31 @@ local function HOOK_MissionStart(mission)
 end
 
 local function HOOK_VekSpawnAdded(mission, spawnData)
+
+	-- mission:ModifySpawnPoint(spawnData.location, {type = "Hornet1"})
+
+
 	if GAME.EvolvedVeks == nil then return false end
 	local options = mod_loader.currentModContent[mod.id].options
 	if options["PrefixSpawns"] and not options["PrefixSpawns"].enabled then return false end
 	for i = 1, #GAME.EvolvedVeks do
 		if GAME.EvolvedVeks[i].Type == spawnData.type and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
-			--mission:ModifySpawnPoint(spawnData.location, {location = spawnData.location, type = GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type})
-			mission:ChangeSpawnPointPawnType(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
+			mission:ModifySpawnPoint(spawnData.location, {type = GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type})
+			-- mission:ChangeSpawnPointPawnType(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
 			-- mission:RemoveSpawnPoint(spawnData.location)
 			-- mission:SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)	--or spawnPawnInternal?
 			-- self.Board:SpawnPawn(pawn, location)
 			-- addSpawnData(self, location, pawn:GetType(), pawn:GetId())
+			-- LOG("trying to spawn a "..GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
+			-- local loc = spawnData.location
+			-- mission:RemoveSpawnPoint(loc)
+			
+			-- modApi:runLater(function()
+				-- local id = Board:SpawnPawn(GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type, loc)
+				-- addSpawnData(self, loc, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type, id, 0)
+				-- Board:Ping(loc, COLOR_BLACK)
+			-- end)
+			
 			GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 			break
 		end

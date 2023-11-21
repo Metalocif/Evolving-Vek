@@ -18,12 +18,16 @@ function IsPrefixValidForVek(prefix, vekType)
 	if prefix == "Ruinous" and _G[vekType].IsDeathEffect then return false end
 	if prefix == "Purifying" and _G[vekType].IsDeathEffect then return false end
 	if prefix == "Healing" and _G[vekType].IsDeathEffect then return false end
+	if prefix == "Spiteful" and _G[vekType].IsDeathEffect then return false end
 	-- if prefix == "Webbing" and (_G[vekType].Ranged == 1 or _G[vekType].MoveSpeed < 3) then return false end
 	if prefix == "Splitting" and _G[vekType].MoveSpeed == 0 then return false end	
 	if prefix == "Oozing" and _G[vekType].MoveSpeed == 0 then return false end	
 	if prefix == "Infectious" and (_G[vekType].Ranged == 1 or _G[vekType].MoveSpeed < 3) then return false end	
 	if prefix == "Regenerating" and _G[vekType].Health == 1 then return false end
 	if prefix == "Wrathful" and _G[vekType].VoidShockImmune then return false end
+	if prefix == "Cannibalistic" and _G[vekType].VoidShockImmune then return false end
+	if prefix == "CopyingMelee" and (_G[vekType].Ranged == 1 or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
+	if prefix == "CopyingRanged" and (_G[vekType].Ranged == 0 or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
 	if prefix == "Tyrannical" and not string.find(_G[vekType].Name, "Psion") then return false end
 	-- _G[vekType].VoidShockImmune is true for weaponless enemies, basically string.find(_G[vekType].Name, "Psion")/Blobber/Spider/...
 	return true
@@ -55,8 +59,80 @@ function CreateEvolvedVek(prefix, vekType)
 	if prefix == "Infectious" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Infectious,} end
 	if prefix == "Regenerating" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Regenerating,} end
 	if prefix == "Wrathful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Wrathful,} end
+	if prefix == "CopyingMelee" then _G[prefix..vekType] = _G[vekType]:new{Name = "Copying".." "..name, Prefixed = true, Portrait = portrait, GetWeapon = CopyingMelee,} end
+	if prefix == "CopyingRanged" then _G[prefix..vekType] = _G[vekType]:new{Name = "Copying".." "..name, Prefixed = true, Portrait = portrait, GetWeapon = CopyingRanged,} end
+	if prefix == "Cannibalistic" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Cannibalistic,} end
+	if prefix == "Spiteful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect, GetDeathEffect = SpitefulDE} end
 	if prefix == "Tyrannical" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Ranged = 1, SkillList = {"TyrannicalAtk1"}, Tooltip = ""} end
 	return false
+end
+
+function GetWeaponTier(weaponType)
+	if string.sub(weaponType, 1, -2) == "1" then return 1 end
+	if string.sub(weaponType, 1, -2) == "2" then return 2 end
+	if string.sub(weaponType, 1, -2) == "B" then return 3 end
+	return 0
+end
+
+function CopyingMelee()
+	local bestWeapon = ""
+	local bestWeaponTier = 0
+	if Pawn:GetWeaponCount() == 2 then
+		bestWeapon = Pawn:GetWeaponType(2)
+		bestWeaponTier = GetWeaponTier(bestWeapon)
+	end
+	for _, curr in ipairs(Board) do
+		local target = Board:GetPawn(curr)
+		if target then LOG(target:GetType()..", "..", "..tostring(target:IsEnemy())..", "..tostring(target:GetWeaponCount())..", "..tostring(target:IsRanged())..", "..tostring(target:GetTeam()==TEAM_BOTS)) end
+		if target and target:IsEnemy() and target:GetWeaponCount() > 0 and not target:IsRanged() then --and not target:GetTeam() == TEAM_BOTS then 
+			local tier = GetWeaponTier(target:GetWeaponType(1))
+			if tier >= bestWeaponTier and target:GetWeaponType(1) ~= Pawn:GetWeaponType(1) then
+				bestWeaponTier = tier
+				bestWeapon = target:GetWeaponType(1)
+			end
+		end
+	end
+	if Pawn:GetWeaponCount() == 2 and bestWeapon ~= Pawn:GetWeaponType(2) then Pawn:RemoveWeapon(2) end
+	if bestWeapon ~= "" then Pawn:AddWeapon(bestWeapon) end
+	return Pawn:GetWeaponCount()
+end
+
+function CopyingRanged()
+	local bestWeapon = ""
+	local bestWeaponTier = 0
+	if Pawn:GetWeaponCount() == 2 then
+		bestWeapon = Pawn:GetWeaponType(2)
+		bestWeaponTier = GetWeaponTier(bestWeapon)
+	end
+	for _, curr in ipairs(Board) do
+		local target = Board:GetPawn(curr)
+		if target then LOG(target:GetType()..", "..", "..tostring(target:IsEnemy())..", "..tostring(target:GetWeaponCount())..", "..tostring(target:IsRanged())..", "..tostring(target:GetTeam()==TEAM_BOTS)) end
+		if target and target:IsEnemy() and target:GetWeaponCount() > 0 and target:IsRanged() then --and not target:GetTeam() == TEAM_BOTS then 
+			local tier = GetWeaponTier(target:GetWeaponType(1))
+			if tier >= bestWeaponTier and target:GetWeaponType(1) ~= Pawn:GetWeaponType(1) then
+				bestWeaponTier = tier
+				bestWeapon = target:GetWeaponType(1)
+			end
+		end
+	end
+	if Pawn:GetWeaponCount() == 2 and bestWeapon ~= Pawn:GetWeaponType(2) then Pawn:RemoveWeapon(2) end
+	if bestWeapon ~= "" then Pawn:AddWeapon(bestWeapon) end
+	return Pawn:GetWeaponCount()
+end
+
+function Cannibalistic()
+	for i = DIR_START, DIR_END do
+		local curr = Pawn:GetSpace() + DIR_VECTORS[i]
+		local target = Board:GetPawn(curr)
+		if target and ((target:IsEnemy() and not target:GetTeam() == TEAM_BOTS) or (target:IsMech() and target:GetClass() == "TechnoVek")) then 
+			Board:DamageSpace(curr, 1)
+			if target:IsDead() then Board:RemovePawn(curr) end
+			Pawn:SetMaxHealth(Pawn:GetMaxHealth() + 2)
+			Board:DamageSpace(Pawn:GetSpace(), -2)
+			Pawn:SetMoveSpeed(Pawn:GetMoveSpeed() + 1)
+		end
+	end
+	return 1
 end
 
 function Infectious()
@@ -143,9 +219,9 @@ function Oozing()
 end
 
 TyrannicalAtk1 = LineArtillery:new{
-	Name="Hive Targeting",
+	Name="The Hive's Spite",
 	Description="Strikes a target with tentacles. Will prioritize units over buildings.",
-	ArtillerySize = 5,
+	ArtillerySize = 3,
 	Damage = 1,
 	Type = 1,
 	ScoreEnemy = 6,
@@ -163,16 +239,41 @@ TyrannicalAtk1 = LineArtillery:new{
 	}
 }
 
+TyrannicalAtk2 = TyrannicalAtk1:new{		--only relevant with things that upgrade Vek weapons, ie. my Rock Leader
+	Name="The Hive's Scorn",
+	ArtillerySize = 4,
+	Damage = 3,
+}
+TyrannicalAtkB = TyrannicalAtk1:new{
+	Name="The Hive's Hate",
+	Description="Strikes a target and its surroundings with tentacles. Will prioritize units over buildings.",
+	ArtillerySize = 5,
+	Damage = 5,
+	CrossAttack = true,
+}
+
 function TyrannicalAtk1:GetSkillEffect(p1, p2)
 	--stolen from Generic's Secret Squad 2, go play it, very fun
 	local ret = SkillEffect()
-	local Tanim1 = SpaceDamage(p2,1)--the tentacles attacking from the front
+	local Tanim1 = SpaceDamage(p2,self.Damage)--the tentacles attacking from the front
 	local Tanim2 = SpaceDamage(p2,0)--the tentacles attacking from the back
 	Tanim1.sAnimation ="PsionAttack_Front"
 	Tanim2.sAnimation ="PsionAttack_Back"
-	ret:AddQueuedBounce(p2,3)
-	ret:AddQueuedArtillery(Tanim1, "", NO_DELAY)
+	ret:AddQueuedArtillery(Tanim1, "", PROJ_DELAY)
 	ret:AddQueuedDamage(Tanim2)
+	ret:AddQueuedBounce(p2,3)
+	if self.CrossAttack then
+		ret:AddQueuedDelay(0.25)
+		Tanim1.iDamage = 2
+		for i = DIR_START, DIR_END do
+			local curr = p2 + DIR_VECTORS[i]
+			Tanim1.loc = curr
+			Tanim2.loc = curr
+			ret:AddQueuedDamage(Tanim1)
+			ret:AddQueuedDamage(Tanim2)
+			ret:AddQueuedBounce(p2,2)
+		end
+	end
 	return ret
 end
 
@@ -188,7 +289,7 @@ function GeneratePrefix(pawn)
 	if pawn:GetMutation() == 6 and IsPrefixValidForVek("Volatile", pawn:GetType()) then return "Volatile" end	
 	if pawn:GetMutation() == 7 and IsPrefixValidForVek("Wrathful", pawn:GetType()) then return "Wrathful" end
 	if GetCurrentMission() == Mission_BlobBoss and IsPrefixValidForVek("Oozing", pawn:GetType()) then return "Oozing" end
-	local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Splitting","Oozing","Infectious","Regenerating","Wrathful"}
+	local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Splitting","Oozing","Infectious","Regenerating","Wrathful","Cannibalistic","CopyingMelee","CopyingRanged"}
 	local prefix
 	repeat
 		prefix = prefixes[math.random(#prefixes)]
@@ -229,6 +330,28 @@ function HealingDE(pawn, point)
 	return ret
 end
 
+function SpitefulDE(pawn, point)
+	ret = SkillEffect()
+	local pawnTier = 1
+	if _G[Pawn:GetType()].Tier == TIER_ALPHA then pawnTier = 2 end
+	if _G[Pawn:GetType()].Tier == TIER_BOSS then pawnTier = 3 end
+	local tierGraphics = tostring(pawnTier)
+	if tierGraphics == "3" then tierGraphics = "B" end
+	local tierGraphicsArt = tierGraphics
+	if tierGraphics == "1" then tierGraphics = "" end
+	for i = DIR_START, DIR_END do
+		local target = GetProjectileEnd(point, point + DIR_VECTORS[i], PATH_PROJECTILE)
+		local pawn = Board:GetPawn(target)
+		if pawn and pawn:IsMech() then ret:AddProjectile(point, SpaceDamage(target, pawnTier), "effects/shot_firefly"..tierGraphics, NO_DELAY) end
+		for j = 2, 8 do
+			local curr2 = point + DIR_VECTORS[i] * j
+			local pawn2 = Board:GetPawn(curr2)
+			if curr2 ~= target and pawn2 and pawn2:IsMech() then ret:AddArtillery(point, SpaceDamage(curr2, pawnTier), "effects/shotup_ant"..tierGraphicsArt..".png", NO_DELAY) end
+		end
+	end
+	return ret
+end
+
 --Hook stuff
 
 local function HOOK_MissionStart(mission)
@@ -255,10 +378,6 @@ local function HOOK_MissionStart(mission)
 end
 
 local function HOOK_VekSpawnAdded(mission, spawnData)
-
-	-- mission:ModifySpawnPoint(spawnData.location, {type = "Hornet1"})
-
-
 	if GAME.EvolvedVeks == nil then return false end
 	local options = mod_loader.currentModContent[mod.id].options
 	if options["PrefixSpawns"] and not options["PrefixSpawns"].enabled then return false end

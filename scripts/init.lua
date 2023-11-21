@@ -34,7 +34,7 @@ function mod:metadata()
 		"Max prefixes at start of mission",
 		"Choose how many Vek can have a prefix on the first turn (default: 1).",
 		{
-			values = { 1, 2, 3, 4, 5},
+			values = { 1, 2, 3, 4, 5, 6}
 		}
 	)
 	modApi:addGenerationOption(
@@ -122,6 +122,12 @@ function mod:metadata()
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(
+		"Enable_Spiteful",
+		"Enable the Spiteful prefix",
+		"Check to allow Vek to be given the Spiteful prefix, making them fire at all mechs on the same row/column; the projectiles deal damage equal to the Vek's tier (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
 		"Enable_Splitting",
 		"Enable the Splitting prefix",
 		"Check to allow Vek to be given the Splitting prefix, making them leave a blob at the start of movement after their first turn alive (default: true).",
@@ -149,6 +155,24 @@ function mod:metadata()
 		"Enable_Wrathful",
 		"Enable the Wrathful prefix",
 		"Check to allow Vek to be given the Wrathful prefix, making them boosted at the start of movement (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Cannibalistic",
+		"Enable the Cannibalistic prefix",
+		"Check to allow Vek to be given the Cannibalistic prefix, making them damage adjacent Vek and Cyborgs at the start of movement to gain health and movement speed (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_CopyingMelee",
+		"Enable the Copying prefix for melee Vek",
+		"Check to allow melee Vek to be given the Copying prefix, making them use the best melee Vek weapon on the board instead of their own (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_CopyingRanged",
+		"Enable the Copying prefix for ranged Vek",
+		"Check to allow ranged Vek to be given the Copying prefix, making them use the best ranged Vek weapon on the board instead of their own (default: true).",
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(

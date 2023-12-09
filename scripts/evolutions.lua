@@ -12,7 +12,7 @@ function IsPrefixValidForVek(prefix, vekType)
 	if prefix == "Heavy" and (_G[vekType].Health > 7 or _G[vekType].MoveSpeed < 2 or _G[vekType].VoidShockImmune) then return false end
 	if prefix == "Light" and _G[vekType].Health == 1 then return false end
 	if prefix == "Volatile" and _G[vekType].Explodes then return false end
-	if prefix == "Massive" and _G[vekType].Massive then return false end
+	if prefix == "Massive" and (_G[vekType].Massive or _G[vekType].Flying) then return false end
 	if prefix == "Undying" and _G[vekType].Corpse then return false end
 	if prefix == "Burrowing" and (_G[vekType].Jumper or _G[vekType].Flying or _G[vekType].Burrows or _G[vekType].Tier == TIER_BOSS or _G[vekType].Health < 3) then return false end
 	if prefix == "Ruinous" and _G[vekType].IsDeathEffect then return false end
@@ -83,7 +83,6 @@ function CopyingMelee()
 	end
 	for _, curr in ipairs(Board) do
 		local target = Board:GetPawn(curr)
-		if target then LOG(target:GetType()..", "..", "..tostring(target:IsEnemy())..", "..tostring(target:GetWeaponCount())..", "..tostring(target:IsRanged())..", "..tostring(target:GetTeam()==TEAM_BOTS)) end
 		if target and target:IsEnemy() and target:GetWeaponCount() > 0 and not target:IsRanged() then --and not target:GetTeam() == TEAM_BOTS then 
 			local tier = GetWeaponTier(target:GetWeaponType(1))
 			if tier >= bestWeaponTier and target:GetWeaponType(1) ~= Pawn:GetWeaponType(1) then
@@ -106,7 +105,6 @@ function CopyingRanged()
 	end
 	for _, curr in ipairs(Board) do
 		local target = Board:GetPawn(curr)
-		if target then LOG(target:GetType()..", "..", "..tostring(target:IsEnemy())..", "..tostring(target:GetWeaponCount())..", "..tostring(target:IsRanged())..", "..tostring(target:GetTeam()==TEAM_BOTS)) end
 		if target and target:IsEnemy() and target:GetWeaponCount() > 0 and target:IsRanged() then --and not target:GetTeam() == TEAM_BOTS then 
 			local tier = GetWeaponTier(target:GetWeaponType(1))
 			if tier >= bestWeaponTier and target:GetWeaponType(1) ~= Pawn:GetWeaponType(1) then
@@ -152,7 +150,18 @@ function Regenerating()
 end
 
 function Wrathful()
-	Pawn:SetBoosted(true)
+	-- Pawn:SetBoosted(true)
+	modApi:conditionalHook(
+		function()
+			GAME.WrathfulPawnId = Pawn:GetId()
+			return Pawn and Pawn:IsQueued() and string.find(Pawn:GetType(), "Wrathful") 
+		end,
+		function()
+			ret = SkillEffect()
+			ret:AddScript(string.format("Board:GetPawn(%s):SetBoosted(true)", GAME.WrathfulPawnId))
+			Board:AddEffect(ret)
+		end
+	)
 	return 1
 end
 
@@ -278,17 +287,19 @@ function TyrannicalAtk1:GetSkillEffect(p1, p2)
 end
 
 
-function GeneratePrefix(pawn)
+function GeneratePrefix(pawn, nondeterministic)
 	local tile = pawn:GetSpace()
-	if string.find(pawn:GetMechName(), "Psion") and pawn:GetType() ~= "Jelly_Lava1" then return "Tyrannical" end 	--hardcoded but Tyrants should basically never be prefixed anyway
-	if pawn:IsFire() and IsPrefixValidForVek("Fireproof", pawn:GetType()) then return "Fireproof" end
-	if Board:IsEdge(tile) and IsPrefixValidForVek("Stable", pawn:GetType()) then return "Stable" end
-	if Board:IsSmoke(tile) and IsPrefixValidForVek("Smokeproof", pawn:GetType()) then return "Smokeproof" end
-	if pawn:GetMutation() == 4 and IsPrefixValidForVek("Regenerating", pawn:GetType()) then return "Regenerating" end
-	if pawn:GetMutation() == 5 and IsPrefixValidForVek("Armored", pawn:GetType()) then return "Armored" end
-	if pawn:GetMutation() == 6 and IsPrefixValidForVek("Volatile", pawn:GetType()) then return "Volatile" end	
-	if pawn:GetMutation() == 7 and IsPrefixValidForVek("Wrathful", pawn:GetType()) then return "Wrathful" end
-	if GetCurrentMission() == Mission_BlobBoss and IsPrefixValidForVek("Oozing", pawn:GetType()) then return "Oozing" end
+	if not nondeterministic then
+		if string.find(pawn:GetMechName(), "Psion") and pawn:GetType() ~= "Jelly_Lava1" then return "Tyrannical" end 	--hardcoded but Tyrants should basically never be prefixed anyway
+		if pawn:IsFire() and IsPrefixValidForVek("Fireproof", pawn:GetType()) then return "Fireproof" end
+		if Board:IsEdge(tile) and IsPrefixValidForVek("Stable", pawn:GetType()) then return "Stable" end
+		if Board:IsSmoke(tile) and IsPrefixValidForVek("Smokeproof", pawn:GetType()) then return "Smokeproof" end
+		if pawn:GetMutation() == 4 and IsPrefixValidForVek("Regenerating", pawn:GetType()) then return "Regenerating" end
+		if pawn:GetMutation() == 5 and IsPrefixValidForVek("Armored", pawn:GetType()) then return "Armored" end
+		if pawn:GetMutation() == 6 and IsPrefixValidForVek("Volatile", pawn:GetType()) then return "Volatile" end	
+		if pawn:GetMutation() == 7 and IsPrefixValidForVek("Wrathful", pawn:GetType()) then return "Wrathful" end
+		if GetCurrentMission() == Mission_BlobBoss and IsPrefixValidForVek("Oozing", pawn:GetType()) then return "Oozing" end
+	end
 	local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Splitting","Oozing","Infectious","Regenerating","Wrathful","Cannibalistic","CopyingMelee","CopyingRanged"}
 	local prefix
 	repeat
@@ -323,9 +334,12 @@ end
 function HealingDE(pawn, point)
 	ret = SkillEffect()
 	for i = DIR_START, DIR_END do
-		local damage = SpaceDamage(point + DIR_VECTORS[i], -1)
-		local pawn = Board:GetPawn(point + DIR_VECTORS[i])
-		if pawn and pawn:GetTeam() == TEAM_ENEMY and pawn:GetTeam() ~= TEAM_BOTS then ret:AddDamage(damage) end
+		local curr = point + DIR_VECTORS[i]
+		local damage = SpaceDamage(curr, -1)
+		local pawn = Board:GetPawn(curr)
+		if pawn and pawn:GetTeam() == TEAM_ENEMY and pawn:GetTeam() ~= TEAM_BOTS then 
+			if pawn:IsDead() then ret:AddScript(string.format("Board:GetPawn(%s):SetHealth(1)", curr:GetString())) else ret:AddDamage(damage) end
+		end
 	end
 	return ret
 end
@@ -367,7 +381,10 @@ local function HOOK_MissionStart(mission)
 				if GAME.EvolvedVeks[i].Type == pawn:GetType() and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
 					Board:RemovePawn(tile)
 					Board:AddPawn(GAME.EvolvedVeks[i].Prefix..pawn:GetType(), tile)
+					Board:AddAlert(tile, GAME.EvolvedVeks[i].Prefix.." Vek!")
+					Board:Ping(tile, COLOR_BLACK)
 					Board:GetPawn(tile):SpawnAnimation()
+					-- Board:AddAlert(tile, GAME.EvolvedVeks[i].Prefix.." Vek!")
 					GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 					prefixesApplied = prefixesApplied + 1
 					if options["PrefixStartCount"] and options["PrefixStartCount"] == prefixesApplied then return true end
@@ -405,20 +422,24 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 	end
 end
 
-local function HOOK_MissionEnd(mission, ret)
-	for _, tile in ipairs(Board) do
-		local pawn = Board:GetPawn(tile)
-		if pawn and pawn:GetTeam() == TEAM_ENEMY and pawn:GetTeam() ~= TEAM_BOTS and not _G[pawn:GetType()].Prefixed and not pawn:IsFrozen() then
-			local prefix = GeneratePrefix(pawn)
+local function HOOK_ProcessVekRetreat(mission, endFx, pawn)
+	--check pawn should be evolved, generate a random valid prefix for it, add it to _G
+	if pawn and pawn:GetTeam() == TEAM_ENEMY and pawn:GetTeam() ~= TEAM_BOTS and not _G[pawn:GetType()].Prefixed and not pawn:IsFrozen() and not pawn:IsDead() and not pawn:IsMinor() then
+		local i = 0
+		local prefix
+		repeat
+			prefix = GeneratePrefix(pawn, i > 0)	--this'll make the prefix random past first try in case eg. Fireproof causes Missing Mod...
 			CreateEvolvedVek(prefix, pawn:GetType())
-			if GAME.EvolvedVeks == nil then GAME.EvolvedVeks = {} end
-			local found = false
-			for i = 1, #GAME.EvolvedVeks do
-				if GAME.EvolvedVeks[i].Type == pawn:GetType() and GAME.EvolvedVeks[i].Prefix == prefix then GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining + 1 found = true break end
-			end
-			if not found then GAME.EvolvedVeks[#GAME.EvolvedVeks+1] = {Type = pawn:GetType(), Prefix = prefix, Remaining = 1} end
-			LOG("added a "..prefix.." "..pawn:GetType()..", we stored "..tostring(#GAME.EvolvedVeks).." different Vek.")
+			if _G[prefix..pawn:GetType()].Name == "Missing Mod" then LOG(prefix.." "..pawn:GetType().." was a Missing Mod???") end
+			i = i + 1
+		until _G[prefix..pawn:GetType()].Name ~= "Missing Mod" or i > 100
+		if GAME.EvolvedVeks == nil then GAME.EvolvedVeks = {} end
+		local found = false
+		for i = 1, #GAME.EvolvedVeks do
+			if GAME.EvolvedVeks[i].Type == pawn:GetType() and GAME.EvolvedVeks[i].Prefix == prefix then GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining + 1 found = true break end
 		end
+		if not found then GAME.EvolvedVeks[#GAME.EvolvedVeks+1] = {Type = pawn:GetType(), Prefix = prefix, Remaining = 1} end
+		LOG("added a "..prefix.." "..pawn:GetType()..", we stored "..tostring(#GAME.EvolvedVeks).." different Vek.")
 	end
 end
 
@@ -434,12 +455,12 @@ local function HOOK_PostLoadGame()
 end
 
 local function EVENT_onModsLoaded()
-	modApi:addMissionStartHook(HOOK_MissionStart)	--add evolved Vek at start of battle
-	modApi:addVekSpawnAddedHook(HOOK_VekSpawnAdded)	--replace spawns with evolved Vek
-	modApi:addMissionEndHook(HOOK_MissionEnd)		--iterate on surviving Vek to evolve them
-	modApi:addPreLoadGameHook(HOOK_PostLoadGame)	--for undoturn? doesn't seem to help
-	modApi:addPostLoadGameHook(HOOK_PostLoadGame)	--regenerate entries in _G as needed by the EvolvedVeks table
-	modApi:addModsLoadedHook(HOOK_PostLoadGame)		--regenerate entries in _G as needed by the EvolvedVeks table
+	modApi:addMissionStartHook(HOOK_MissionStart)			--add evolved Vek at start of battle
+	modApi:addVekSpawnAddedHook(HOOK_VekSpawnAdded)			--replace spawns with evolved Vek	
+	modApi:addProcessVekRetreatHook(HOOK_ProcessVekRetreat)	--iterate on surviving Vek to evolve them
+	modApi:addPreLoadGameHook(HOOK_PostLoadGame)			--for undoturn? doesn't seem to help
+	modApi:addPostLoadGameHook(HOOK_PostLoadGame)			--regenerate entries in _G as needed by the EvolvedVeks table
+	modApi:addModsLoadedHook(HOOK_PostLoadGame)				--regenerate entries in _G as needed by the EvolvedVeks table
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

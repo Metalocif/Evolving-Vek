@@ -1,8 +1,8 @@
-local description = "Adds prefixes to enemies. Each enemy can have a random buff."
+local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions."
 local mod = {
 	id = "Meta_EvolvingVek",
 	name = "Evolving Vek",
-	version = "1.1",
+	version = "1.2.1",
 	requirements = {},
 	dependencies = { 
 		modApiExt = "1.18", --We can get this by using the variable `modapiext`

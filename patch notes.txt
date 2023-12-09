@@ -1,3 +1,13 @@
+v1.2.1
+- Should have fixed a long-standing bug by rerolling prefixes when it occurs.
+  - This bug was made invisible to the player by preventing prefixing when it occured in v1.1, hopefully.
+  - So this should only make more prefixed Vek appear.
+  - I cannot stress enough how weird this bug is, but at least it's handled, if not fixed.
+- Added pings where a prefixed Vek appears to make the player aware of them. Alerts didn't work for some reason.
+- Fixed an issue where Healing Vek would not heal adjacent Vek corpses back to life.
+- Fixed an issue with Wrathful where the Boost status would be removed after queueing the attack.
+- Flying pawns can't be prefixed with Massive anymore.
+
 v1.2
 - Added the following prefixes: Cannibalistic, Spiteful, Copying (melee and ranged versions).
 - Added upgraded versions of the Tyrannical weapon so that things that upgrade Vek weapons can upgrade it.

@@ -1,8 +1,8 @@
-local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions."
+local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions. Check mod options to disable individual prefix and learn what each does."
 local mod = {
 	id = "Meta_EvolvingVek",
 	name = "Evolving Vek",
-	version = "1.2.1",
+	version = "1.3",
 	requirements = {},
 	dependencies = { 
 		modApiExt = "1.18", --We can get this by using the variable `modapiext`
@@ -15,6 +15,7 @@ local mod = {
 }
 
 function mod:init()
+	require(self.scriptPath .."effects")
 	require(self.scriptPath .."evolutions")
 end
 
@@ -36,6 +37,12 @@ function mod:metadata()
 		{
 			values = { 1, 2, 3, 4, 5, 6}
 		}
+	)
+	modApi:addGenerationOption(
+		"PrefixDeterministic",
+		"Prefix deterministically",
+		"Check to add a given prefix to Vek that escape in some situations deterministically. For instance, a Vek that survives the mission on fire will always become Fireproof. With this off, the prefix would be random, but suitable for the Vek type (default: true).",
+		{ enabled = true }
 	)
 	modApi:addGenerationOption(
 		"Enable_Stable",
@@ -128,6 +135,12 @@ function mod:metadata()
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(
+		"Enable_Brood",
+		"Enable the Brood prefix",
+		"Check to allow Vek to be given the Brood prefix, making them spawn a spiderling egg on death (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
 		"Enable_Splitting",
 		"Enable the Splitting prefix",
 		"Check to allow Vek to be given the Splitting prefix, making them leave a blob at the start of movement after their first turn alive (default: true).",
@@ -176,9 +189,39 @@ function mod:metadata()
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(
+		"Enable_Webbing",
+		"Enable the Webbing prefix",
+		"Check to allow Vek to be given the Webbing prefix, making them web adjacent allied units at the end of movement (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
 		"Enable_Tyrannical",
 		"Enable the Tyrannical prefix",
 		"Check to allow Psions to be given the Tyrannical prefix, granting them a weak artillery attack (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Mirroring",
+		"Enable the Mirroring prefix",
+		"Check to allow Vek to be given the Mirroring prefix, making them fire their weapon forward and backwards at the same time (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Pushing",
+		"Enable the Pushing prefix",
+		"Check to allow Vek to be given the Pushing prefix, making their weapon push everything it hits (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Groundbreaking",
+		"Enable the Groundbreaking prefix",
+		"Check to allow Vek to be given the Groundbreaking prefix, making their weapon crack tiles it hits (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Grappling",
+		"Enable the Grappling prefix",
+		"Check to allow Vek to be given the Grappling prefix, making them grapple towards their target when they queue their action (default: true).",
 		{ enabled = true }
 	)
 end

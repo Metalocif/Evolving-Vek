@@ -148,7 +148,6 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 			GetCurrentMission():RemoveSpawnPoint(spawnData.location)
 			modApi:runLater(function()
 				GetCurrentMission():SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
-				Board:Ping(spawnData.location, COLOR_BLACK)
 			end)
 			GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 			break

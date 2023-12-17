@@ -27,7 +27,7 @@ function mod:metadata()
 	modApi:addGenerationOption(
 		"PrefixSpawns",
 		"Modify spawns during mission",
-		"Check to modify spawns during missions instead of solely before deployment; this is currently buggy (default: true).",
+		"Check to modify spawns during missions instead of solely before deployment (default: true).",
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(

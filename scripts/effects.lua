@@ -3,8 +3,9 @@
 --Skill Effect Modification prefixes--
 --------------------------------------
 
---these prefixes add a second weapon to the pawn it will always choose (instead of the original)
---that second weapon runs the target area and skill effect of the first one, modifying the skill effect
+--These prefixes add a second weapon to the pawn it will always choose (instead of the original).
+--That second weapon runs the target area and skill effect of the first one, modifying the skill effect.
+--Some prefixes just alter stats/traits and won't use anything in this file.	
 
 Meta_MirrorWeapon = Skill:new{
 	Name="Mirror",
@@ -106,7 +107,10 @@ Meta_CrackingWeapon = Skill:new{
 }
 
 function Meta_CrackingWeapon:GetTargetArea(point)
-	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+	if Board:GetPawn(point) then
+		return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+	end
+	return PointList()
 end
 
 function Meta_CrackingWeapon:GetSkillEffect(p1, p2)
@@ -117,7 +121,193 @@ function Meta_CrackingWeapon:GetSkillEffect(p1, p2)
 		local new_damage_list = DamageList()
 		for i = 1, fx.q_effect:size() do
 			local curr_space_damage = fx.q_effect:index(i)
-			curr_space_damage.iCrack = 1
+			if curr_space_damage.iDamage > 0 then curr_space_damage.iCrack = 1 end
+			new_damage_list:push_back(curr_space_damage)
+		end
+
+		fx.q_effect = new_damage_list
+		ret = fx
+	end
+	return ret
+end
+
+
+Meta_VenomousWeapon = Skill:new{
+	Name="Venomous",
+	Description="Copies the user's other weapon, firing an acid projectile first.",
+	Class = "Enemy",
+	Icon = "weapons/enemy_scarab1.png",
+	Projectile = "",
+	Explosion = "",
+	ImpactSound = "",
+	TipImage = {
+		Unit = Point(2,4),
+		Enemy = Point(2,1),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		CustomPawn = "Jelly_Health1"
+	}
+}
+
+function Meta_VenomousWeapon:GetTargetArea(point)
+	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+end
+
+function Meta_VenomousWeapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local dir = GetDirection(p2-p1)
+	if Board:GetPawn(p1) then	--otherwise we get errors on moving/death
+		if p1 ~= p2 then
+			local fx = _G[Board:GetPawn(p1):GetWeaponType(1)]:GetSkillEffect(p1, p2)
+			local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
+			local acidDamage = SpaceDamage(target)
+			acidDamage.iAcid = 1
+			fx:AddProjectile(p1, acidDamage, "effects/shot_firefly2", NO_DELAY)
+			ret = fx
+		end
+	end
+	return ret
+end
+
+
+
+Meta_WebbingWeapon = Skill:new{
+	Name="Webbing",
+	Description="Copies the user's other weapon, webbing adjacent enemies first.",
+	Class = "Enemy",
+	Icon = "weapons/enemy_scarab1.png",
+	Projectile = "",
+	Explosion = "",
+	ImpactSound = "",
+	TipImage = {
+		Unit = Point(2,4),
+		Enemy = Point(2,1),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		CustomPawn = "Jelly_Health1"
+	}
+}
+
+function Meta_WebbingWeapon:GetTargetArea(point)
+	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+end
+
+function Meta_WebbingWeapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local dir = GetDirection(p2-p1)
+	if Board:GetPawn(p1) then	--otherwise we get errors on moving/death
+		local fx = _G[Board:GetPawn(p1):GetWeaponType(1)]:GetSkillEffect(p1, p2)
+		for i = DIR_START, DIR_END do
+			local curr = p1 + DIR_VECTORS[i]
+			if (Board:GetPawn(curr) and Board:GetPawn(curr):GetTeam() == TEAM_PLAYER) or Board:IsBuilding(curr) then fx:AddGrapple(p1, curr, "hold") end
+		end
+		ret = fx
+	end
+	return ret
+end
+
+
+Meta_FrenziedWeapon = Skill:new{
+	Name="Frenzied",
+	Description="Copies the user's other weapon, dealing two more damage.",
+	Class = "Enemy",
+	Icon = "weapons/enemy_scarab1.png",
+	Projectile = "",
+	Explosion = "",
+	ImpactSound = "",
+	TipImage = {
+		Unit = Point(2,4),
+		Enemy = Point(2,1),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		CustomPawn = "Jelly_Health1"
+	}
+}
+
+function Meta_FrenziedWeapon:GetTargetArea(point)
+	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+end
+
+function Meta_FrenziedWeapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local dir = GetDirection(p2-p1)
+	if Board:GetPawn(p1) then	--otherwise we get errors on moving/death
+		local fx = _G[Board:GetPawn(p1):GetWeaponType(1)]:GetSkillEffect(p1, p2)
+		local new_damage_list = DamageList()
+		for i = 1, fx.q_effect:size() do
+			local curr_space_damage = fx.q_effect:index(i)
+			if curr_space_damage.iDamage > 0 then curr_space_damage.iDamage = curr_space_damage.iDamage + 2 end
+			new_damage_list:push_back(curr_space_damage)
+		end
+
+		fx.q_effect = new_damage_list
+		ret = fx
+	end
+	return ret
+end
+
+Meta_WrathfulWeapon = Skill:new{
+	Name="Wrathful",
+	Description="Copies the user's other weapon, dealing one more damage.",
+	Class = "Enemy",
+	Icon = "weapons/enemy_scarab1.png",
+	Projectile = "",
+	Explosion = "",
+	ImpactSound = "",
+	TipImage = {
+		Unit = Point(2,4),
+		Enemy = Point(2,1),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		CustomPawn = "Jelly_Health1"
+	}
+}
+
+function Meta_WrathfulWeapon:GetTargetArea(point)
+	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+end
+
+function Meta_WrathfulWeapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local dir = GetDirection(p2-p1)
+	if Board:GetPawn(p1) then	--otherwise we get errors on moving/death
+		ret = _G[Board:GetPawn(p1):GetWeaponType(1)]:GetSkillEffect(p1, p2)
+		ret:AddScript(string.format("modApi:runLater(function() Board:GetPawn(%s):SetBoosted(true) end)", p1:GetString()))
+	end
+	return ret
+end
+
+
+Meta_FreezingWeapon = Skill:new{
+	Name="Freezing",
+	Description="Copies the user's other weapon, freezing anything it damages.",
+	Class = "Enemy",
+	Icon = "weapons/enemy_scarab1.png",
+	Projectile = "",
+	Explosion = "",
+	ImpactSound = "",
+	TipImage = {
+		Unit = Point(2,4),
+		Enemy = Point(2,1),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		CustomPawn = "Jelly_Health1"
+	}
+}
+
+function Meta_FreezingWeapon:GetTargetArea(point)
+	return _G[Board:GetPawn(point):GetWeaponType(1)]:GetTargetArea(point)
+end
+
+function Meta_FreezingWeapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local dir = GetDirection(p2-p1)
+	if Board:GetPawn(p1) then	--otherwise we get errors on moving/death
+		local fx = _G[Board:GetPawn(p1):GetWeaponType(1)]:GetSkillEffect(p1, p2)
+		local new_damage_list = DamageList()
+		for i = 1, fx.q_effect:size() do
+			local curr_space_damage = fx.q_effect:index(i)
+			if curr_space_damage.iDamage > 0 then curr_space_damage.iFrozen = 1 end
 			new_damage_list:push_back(curr_space_damage)
 		end
 
@@ -196,11 +386,11 @@ function SEMovesSelf(skillName)
 	local p2 = Point(4,5)
 	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
 	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
-		if spaceDamage:IsMovement() and spaceDamage:GetMoveType() ~= 3 and spaceDamage:GetSource() == p1 then return true end
+		if spacedamage and spaceDamage:IsMovement() and spaceDamage:GetMoveType() ~= 3 and spaceDamage:GetSource() == p1 then return true end
 		--MoveType of 3 is just AddMelee
 	end
 	for _, spaceDamage in ipairs(extract_table(skillEffect.effect)) do
-		if spaceDamage:IsMovement() and spaceDamage:GetMoveType() ~= 3 and spaceDamage:GetSource() == p1 then return true end
+		if spacedamage and spaceDamage:IsMovement() and spaceDamage:GetMoveType() ~= 3 and spaceDamage:GetSource() == p1 then return true end
 	end
 	return false
 end
@@ -210,7 +400,7 @@ function SEPushes(skillName)
 	local p2 = Point(4,5)
 	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
 	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
-		if spaceDamage.iPush ~= DIR_NONE then return true end
+		if spacedamage and spaceDamage.iPush ~= DIR_NONE then return true end
 	end
 	return false
 end
@@ -221,7 +411,7 @@ function SEIsMirror(skillName)
 	local revDir = GetDirection(p1-p2)
 	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
 	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
-		if spacedamage.loc ~= p1 and GetDirection(spaceDamage.loc - p1) == revDir then return true end
+		if spacedamage and spacedamage.loc ~= p1 and GetDirection(spaceDamage.loc - p1) == revDir then return true end
 	end
 	return false
 end
@@ -231,7 +421,7 @@ function SEIsArtillery(skillName)
 	local p2 = Point(4,5)
 	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
 	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
-		if spaceDamage:GetType() == 1 then return true end	--0 is no projectile displayed, 1 is artillery, 2 is projectile
+		if spacedamage and spaceDamage:GetType() == 1 then return true end	--0 is no projectile displayed, 1 is artillery, 2 is projectile
 	end
 	return false
 end
@@ -241,7 +431,27 @@ function SECracks(skillName)
 	local p2 = Point(4,5)
 	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
 	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
-		if spaceDamage.iCrack == 1 then return true end
+		if spacedamage and spaceDamage.iCrack == 1 then return true end
+	end
+	return false
+end
+
+function SEIsFire(skillName)
+	local p1 = Point(4,4)
+	local p2 = Point(4,5)
+	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
+	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
+		if spacedamage and spaceDamage.iFire == 1 then return true end
+	end
+	return false
+end
+
+function SEIsIce(skillName)
+	local p1 = Point(4,4)
+	local p2 = Point(4,5)
+	local skillEffect = _G[skillName]:GetSkillEffect(p1,p2)
+	for _, spaceDamage in ipairs(extract_table(skillEffect.q_effect)) do
+		if spacedamage and spaceDamage.iFrozen == 1 then return true end
 	end
 	return false
 end
@@ -322,43 +532,42 @@ function Regenerating()
 	return 1
 end
 
-function Wrathful()
-	-- Pawn:SetBoosted(true)
-	modApi:conditionalHook(
-		function()
-			GAME.WrathfulPawnId = Pawn:GetId()
-			return Pawn and Pawn:IsQueued() and string.find(Pawn:GetType(), "Wrathful") 
-		end,
-		function()
-			ret = SkillEffect()
-			ret:AddScript(string.format("Board:GetPawn(%s):SetBoosted(true)", GAME.WrathfulPawnId))
-			Board:AddEffect(ret)
-		end
-	)
-	return 1
-end
+-- function Wrathful()
+	-- modApi:conditionalHook(
+		-- function()
+			-- GAME.WrathfulPawnId = Pawn:GetId()
+			-- return Pawn and Pawn:IsQueued() and string.find(Pawn:GetType(), "Wrathful") 
+		-- end,
+		-- function()
+			-- ret = SkillEffect()
+			-- ret:AddScript(string.format("Board:GetPawn(%s):SetBoosted(true)", GAME.WrathfulPawnId))
+			-- Board:AddEffect(ret)
+		-- end
+	-- )
+	-- return 1
+-- end
 
-function Webbing()
-	modApi:conditionalHook(
-		function()
-			GAME.WebbingPawnId = Pawn:GetId()
-			return Pawn and Pawn:IsQueued() and not Pawn:IsActive() and string.find(Pawn:GetType(), "Webbing") 
-		end,
-		function()
-			local pawn = Board:GetPawn(GAME.WebbingPawnId)
-			ret = SkillEffect()
-			for i = DIR_START, DIR_END do
-				local curr = pawn:GetSpace() + DIR_VECTORS[i]
+-- function Webbing()
+	-- modApi:conditionalHook(
+		-- function()
+			-- GAME.WebbingPawnId = Pawn:GetId()
+			-- return Pawn and Pawn:IsQueued() and not Pawn:IsActive() and string.find(Pawn:GetType(), "Webbing") 
+		-- end,
+		-- function()
+			-- local pawn = Board:GetPawn(GAME.WebbingPawnId)
+			-- ret = SkillEffect()
+			-- for i = DIR_START, DIR_END do
+				-- local curr = pawn:GetSpace() + DIR_VECTORS[i]
 				-- Board:Ping(curr, COLOR_BLACK)
-				if Board:GetPawn(curr) and Board:GetPawn(curr):IsPlayer() then
-					ret:AddGrapple(pawn:GetSpace(), curr, "hold")
-				end
-			end
-			Board:AddEffect(ret)
-		end
-	)
-	return 1
-end
+				-- if Board:GetPawn(curr) and Board:GetPawn(curr):IsPlayer() then
+					-- ret:AddGrapple(pawn:GetSpace(), curr, "hold")
+				-- end
+			-- end
+			-- Board:AddEffect(ret)
+		-- end
+	-- )
+	-- return 1
+-- end
 
 function Splitting()
 	--we'll only spawn something if we are not above liquid/chasm, we could move to something adjacent, and we wouldn't move into fire/landmine
@@ -468,6 +677,12 @@ end
 -------------------------
 
 --effects that trigger on death
+
+function UndyingDE(pawn, point)
+	ret = SkillEffect()
+	if Board:GetTerrain(point) == TERRAIN_WATER then Pawn:SetCorpse(false) end
+	return ret
+end
 
 function RuinousDE(pawn, point)
 	ret = SkillEffect()

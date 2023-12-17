@@ -1,8 +1,8 @@
-local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions. Check mod options to disable individual prefix and learn what each does."
+local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions. Check mod options to disable individual prefixes and learn what each does."
 local mod = {
 	id = "Meta_EvolvingVek",
 	name = "Evolving Vek",
-	version = "1.3",
+	version = "1.3.1",
 	requirements = {},
 	dependencies = { 
 		modApiExt = "1.18", --We can get this by using the variable `modapiext`
@@ -77,7 +77,7 @@ function mod:metadata()
 	modApi:addGenerationOption(
 		"Enable_Heavy",
 		"Enable the Heavy prefix",
-		"Check to allow Vek to be given the Heavy prefix, granting them +2 HP at the cost of 1 movement (default: true).",
+		"Check to allow Vek to be given the Heavy prefix, granting them +2 HP at the cost of 2 movement (default: true).",
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(
@@ -219,9 +219,21 @@ function mod:metadata()
 		{ enabled = true }
 	)
 	modApi:addGenerationOption(
-		"Enable_Grappling",
-		"Enable the Grappling prefix",
-		"Check to allow Vek to be given the Grappling prefix, making them grapple towards their target when they queue their action (default: true).",
+		"Enable_Venomous",
+		"Enable the Venomous prefix",
+		"Check to allow Vek to be given the Venomous prefix, making their weapon fire an instant A.C.I.D. shot before queuing their attack (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Frenzied",
+		"Enable the Frenzied prefix",
+		"Check to allow Vek to be given the Frenzied prefix, making their weapon deal an extra 2 damage at the cost of 1 max HP (default: true).",
+		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"Enable_Freezing",
+		"Enable the Freezing prefix",
+		"Check to allow Vek to be given the Freezing prefix, making their weapon freeze anything it damages (default: true).",
 		{ enabled = true }
 	)
 end

@@ -11,11 +11,12 @@ function IsPrefixValidForVek(prefix, vekType)
 	if prefix == "Smokeproof" and _G[vekType].IgnoreSmoke then return false end
 	if prefix == "Leaping" and (_G[vekType].Jumper or _G[vekType].Flying or _G[vekType].Burrows) then return false end
 	if prefix == "Armored" and _G[vekType].Armor then return false end
-	if prefix == "Heavy" and (_G[vekType].Health > 7 or _G[vekType].MoveSpeed < 2 or _G[vekType].VoidShockImmune) then return false end
+	if prefix == "Heavy" and (_G[vekType].Health > 7 or _G[vekType].MoveSpeed < 3 or _G[vekType].VoidShockImmune) then return false end
+	-- _G[vekType].VoidShockImmune is true for weaponless enemies, basically string.find(_G[vekType].Name, "Psion")/Blobber/Spider/...
 	if prefix == "Light" and _G[vekType].Health == 1 then return false end
 	if prefix == "Volatile" and _G[vekType].Explodes then return false end
 	if prefix == "Massive" and (_G[vekType].Massive or _G[vekType].Flying) then return false end
-	if prefix == "Undying" and _G[vekType].Corpse then return false end
+	if prefix == "Undying" and (_G[vekType].Corpse or _G[vekType].IsDeathEffect) then return false end
 	if prefix == "Burrowing" and (_G[vekType].Jumper or _G[vekType].Flying or _G[vekType].Burrows or _G[vekType].Tier == TIER_BOSS or _G[vekType].Health < 3) then return false end
 	if prefix == "Ruinous" and _G[vekType].IsDeathEffect then return false end
 	if prefix == "Purifying" and _G[vekType].IsDeathEffect then return false end
@@ -29,13 +30,15 @@ function IsPrefixValidForVek(prefix, vekType)
 	if prefix == "Regenerating" and _G[vekType].Health == 1 then return false end
 	if prefix == "Wrathful" and _G[vekType].VoidShockImmune then return false end
 	if prefix == "Cannibalistic" and _G[vekType].VoidShockImmune then return false end
-	if prefix == "CopyingMelee" and (_G[vekType].Ranged == 1 or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
-	if prefix == "CopyingRanged" and (_G[vekType].Ranged == 0 or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
+	if prefix == "CopyingMelee" and (_G[vekType].Ranged == 1 or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
+	if prefix == "CopyingRanged" and (_G[vekType].Ranged == 0 or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or _G[vekType].Tier == TIER_BOSS) then return false end
 	if prefix == "Tyrannical" and not string.find(_G[vekType].Name, "Psion") then return false end
-	-- _G[vekType].VoidShockImmune is true for weaponless enemies, basically string.find(_G[vekType].Name, "Psion")/Blobber/Spider/...
-	if prefix == "Mirroring" and (_G[vekType].VoidShockImmune or #_G[vekType].SkillList ~= 1) then return false end
-	if prefix == "Pushing" and (_G[vekType].VoidShockImmune or #_G[vekType].SkillList ~= 1 or SEPushes(_G[vekType].SkillList[1]) or SEIsMirror(_G[vekType].SkillList[1])) then return false end
-	if prefix == "Groundbreaking" and (_G[vekType].VoidShockImmune or #_G[vekType].SkillList ~= 1 or SECracks(_G[vekType].SkillList[1])) then return false end
+	if prefix == "Mirroring" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1) then return false end
+	if prefix == "Pushing" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or SEPushes(_G[vekType].SkillList[1]) or SEIsMirror(_G[vekType].SkillList[1])) then return false end
+	if prefix == "Groundbreaking" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or SECracks(_G[vekType].SkillList[1])) then return false end
+	if prefix == "Venomous" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or SEIsArtillery(_G[vekType].SkillList[1])) then return false end
+	if prefix == "Frenzied" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or _G[vekType].Health == 1 or (_G[vekType].SkillList[1].Damage and (_G[vekType].SkillList[1].Damage <= 0 or _G[vekType].SkillList[1].Damage >= 3))) then return false end
+	if prefix == "Freezing" and (_G[vekType].VoidShockImmune or not _G[vekType].SkillList or #_G[vekType].SkillList ~= 1 or (_G[vekType].SkillList[1].Damage and _G[vekType].SkillList[1].Damage <= 1) or SEIsFire(_G[vekType].SkillList[1]) or SEIsIce(_G[vekType].SkillList[1])) then return false end
 	-- if prefix == "Grappling" and (_G[vekType].VoidShockImmune or #_G[vekType].SkillList ~= 1 or _G[vekType].Ranged == 0 or SEMovesSelf(_G[vekType].SkillList[1]) or SEIsArtillery(_G[vekType].SkillList[1])) then return false end
 	return true
 end
@@ -51,30 +54,33 @@ function CreateEvolvedVek(prefix, vekType)
 	if prefix == "Smokeproof" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IgnoreSmoke = true,} end
 	if prefix == "Leaping" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Jumper = true,} end
 	if prefix == "Armored" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Armor = true,} end
-	if prefix == "Heavy" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Health = _G[vekType].Health + 2, MoveSpeed = _G[vekType].MoveSpeed - 1,} end
+	if prefix == "Heavy" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Health = _G[vekType].Health + 2, MoveSpeed = _G[vekType].MoveSpeed - 2,} end
 	if prefix == "Light" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Health = _G[vekType].Health - 1, MoveSpeed = _G[vekType].MoveSpeed + 2,} end
 	if prefix == "Volatile" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Explodes = true,} end
 	if prefix == "Massive" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Massive = true,} end
-	if prefix == "Undying" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Corpse = true,} end
+	if prefix == "Undying" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Corpse = true, IsDeathEffect = true, GetDeathEffect = UndyingDE} end
 	if prefix == "Burrowing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Burrows = true,} end
 	if prefix == "Ruinous" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect = true, GetDeathEffect = RuinousDE} end
 	if prefix == "Purifying" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect = true, GetDeathEffect = PurifyingDE} end
 	if prefix == "Healing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect = true, GetDeathEffect = HealingDE} end
-	if prefix == "Webbing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Webbing,} end
+	if prefix == "Webbing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_WebbingWeapon" }, Weapon = 2,} end
 	if prefix == "Splitting" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Splitting,} end
 	if prefix == "Oozing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Oozing,} end
 	if prefix == "Infectious" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Infectious,} end
 	if prefix == "Regenerating" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Regenerating,} end
-	if prefix == "Wrathful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Wrathful,} end
+	if prefix == "Wrathful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_WrathfulWeapon" }, Weapon = 2,} end
 	if prefix == "CopyingMelee" then _G[prefix..vekType] = _G[vekType]:new{Name = "Copying".." "..name, Prefixed = true, Portrait = portrait, GetWeapon = CopyingMelee,} end
 	if prefix == "CopyingRanged" then _G[prefix..vekType] = _G[vekType]:new{Name = "Copying".." "..name, Prefixed = true, Portrait = portrait, GetWeapon = CopyingRanged,} end
 	if prefix == "Cannibalistic" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, GetWeapon = Cannibalistic,} end
-	if prefix == "Spiteful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect, GetDeathEffect = SpitefulDE} end
-	if prefix == "Brood" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect, GetDeathEffect = BroodDE} end
+	if prefix == "Spiteful" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect = true, GetDeathEffect = SpitefulDE} end
+	if prefix == "Brood" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, IsDeathEffect = true, GetDeathEffect = BroodDE} end
 	if prefix == "Tyrannical" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, Ranged = 1, SkillList = {"TyrannicalAtk1"}, Tooltip = ""} end
 	if prefix == "Mirroring" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_MirrorWeapon" }, Weapon = 2} end
 	if prefix == "Pushing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_PushingWeapon" }, Weapon = 2} end
 	if prefix == "Groundbreaking" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_CrackingWeapon" }, Weapon = 2} end
+	if prefix == "Venomous" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_VenomousWeapon" }, Weapon = 2} end
+	if prefix == "Frenzied" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_FrenziedWeapon" }, Weapon = 2, Health = _G[vekType].Health - 1,} end
+	if prefix == "Freezing" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_FreezingWeapon" }, Weapon = 2, } end
 	-- if prefix == "Grappling" then _G[prefix..vekType] = _G[vekType]:new{Name = prefix.." "..name, Prefixed = true, Portrait = portrait, SkillList = { _G[vekType].SkillList[1], "Meta_GrapplingWeapon" }, Weapon = 2} end
 	return false
 end
@@ -92,14 +98,18 @@ function GeneratePrefix(pawn, nondeterministic)
 		if pawn:GetMutation() == 5 and IsPrefixValidForVek("Armored", pawn:GetType()) then return "Armored" end
 		if pawn:GetMutation() == 6 and IsPrefixValidForVek("Volatile", pawn:GetType()) then return "Volatile" end	
 		if pawn:GetMutation() == 7 and IsPrefixValidForVek("Wrathful", pawn:GetType()) then return "Wrathful" end
+		if pawn:IsDamaged() and IsPrefixValidForVek("Frenzied", pawn:GetType()) then return "Frenzied" end
 		if GetCurrentMission() == Mission_BlobBoss and IsPrefixValidForVek("Oozing", pawn:GetType()) then return "Oozing" end
 	end
-	local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking"}
-	-- local prefixes = {"Brood","Pushing","Mirroring","Webbing","Groundbreaking"}
-	local prefix
+	-- local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking","Venomous","Frenzied","Freezing"}
+	local prefixes = {"Webbing","Wrathful"}
+	local prefix = ""
+	local i = 0
 	repeat
 		prefix = prefixes[math.random(#prefixes)]
-	until IsPrefixValidForVek(prefix, pawn:GetType())
+		i = i + 1
+	until IsPrefixValidForVek(prefix, pawn:GetType()) or i > 100
+	if prefix == "" then prefix = "Heavy" end 	--default to that
 	return prefix
 end
 
@@ -135,22 +145,11 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 	if options["PrefixSpawns"] and not options["PrefixSpawns"].enabled then return false end
 	for i = 1, #GAME.EvolvedVeks do
 		if GAME.EvolvedVeks[i].Type == spawnData.type and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
-			mission:ModifySpawnPoint(spawnData.location, {type = GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type})
-			-- mission:ChangeSpawnPointPawnType(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
-			-- mission:RemoveSpawnPoint(spawnData.location)
-			-- mission:SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)	--or spawnPawnInternal?
-			-- self.Board:SpawnPawn(pawn, location)
-			-- addSpawnData(self, location, pawn:GetType(), pawn:GetId())
-			-- LOG("trying to spawn a "..GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
-			-- local loc = spawnData.location
-			-- mission:RemoveSpawnPoint(loc)
-			
-			-- modApi:runLater(function()
-				-- local id = Board:SpawnPawn(GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type, loc)
-				-- addSpawnData(self, loc, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type, id, 0)
-				-- Board:Ping(loc, COLOR_BLACK)
-			-- end)
-			
+			GetCurrentMission():RemoveSpawnPoint(spawnData.location)
+			modApi:runLater(function()
+				GetCurrentMission():SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
+				Board:Ping(spawnData.location, COLOR_BLACK)
+			end)
 			GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 			break
 		end

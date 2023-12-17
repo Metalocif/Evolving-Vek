@@ -1,3 +1,12 @@
+v1.4
+- Prefixed enemy spawns are finally working.
+- Undying enemies have their corpses disappear if they die in water.
+  - Corpses can still be pushed into water and stay there just fine, but this should help.
+- Added a failsafe to prevent an infinite loop if too many prefixes were disabled and none are valid.
+- Added the following prefixes: Frenzied, Freezing, Venomous.
+- Nerfed Heavy. It now lowers MS by 2 instead of 1. Max HP is highly visible to the player, a difference of 1 MS is not.
+- Fixes to Webbing and Wrathful.
+
 v1.3
 - Added a mod option to prevent deterministic prefixes (Vek on fire -> Fireproof) and make them random instead.
 - Added the following prefixes: Brood, Webbing, Mirroring, Pushing, Groundbreaking.
@@ -6,7 +15,7 @@ v1.3
 
 v1.2.1
 - Should have fixed a long-standing bug by rerolling prefixes when it occurs.
-  - This bug was made invisible to the player by preventing prefixing when it occured in v1.1, hopefully.
+  - This bug was made invisible to the player by preventing prefixing when it occured in v1.1.
   - So this should only make more prefixed Vek appear.
   - I cannot stress enough how weird this bug is, but at least it's handled, if not fixed.
 - Added pings where a prefixed Vek appears to make the player aware of them. Alerts didn't work for some reason.
@@ -40,3 +49,7 @@ v1.1
   - Added an extra failsafe for it, just in case.
 - Related: prefixed enemies at the start of a mission correctly emerge instead of standing in their starting tile.
 - Vek that are frozen at the end of a mission no longer become evolved Vek.
+
+v1.0
+- Release.
+- Added the following prefixes: Stable, Fireproof, Smokeproof, Leaping, Armored, Volatile, Heavy, Massive, Undying, Ruinous, Purifying, Healing.

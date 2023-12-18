@@ -101,8 +101,8 @@ function GeneratePrefix(pawn, nondeterministic)
 		if pawn:IsDamaged() and IsPrefixValidForVek("Frenzied", pawn:GetType()) then return "Frenzied" end
 		if GetCurrentMission() == Mission_BlobBoss and IsPrefixValidForVek("Oozing", pawn:GetType()) then return "Oozing" end
 	end
-	-- local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking","Venomous","Frenzied","Freezing"}
-	local prefixes = {"Webbing","Wrathful"}
+	local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking","Venomous","Frenzied","Freezing"}
+	-- local prefixes = {"Webbing","Wrathful"}
 	local prefix = ""
 	local i = 0
 	repeat

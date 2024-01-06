@@ -1,8 +1,8 @@
-local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions. Check mod options to disable individual prefixes and learn what each does."
+local description = "Adds prefixes to enemies. Each enemy can have a random suitable buff. Prefixes are generated based on enemies you left alive at the end of previous missions. Check mod options to disable individual prefixes and learn what each prefix does."
 local mod = {
 	id = "Meta_EvolvingVek",
 	name = "Evolving Vek",
-	version = "1.3.1",
+	version = "1.4.1",
 	requirements = {},
 	dependencies = { 
 		modApiExt = "1.18", --We can get this by using the variable `modapiext`
@@ -17,10 +17,20 @@ local mod = {
 function mod:init()
 	require(self.scriptPath .."effects")
 	require(self.scriptPath .."evolutions")
+	require(self.scriptPath .."tips")
+	require(self.scriptPath .."libs/tutorialTips")
+	self.libs = {}
+	self.libs.modApiExt = modapiext
+	EvolvingVek_ModApiExt = self.libs.modApiExt --I'm assuming this is safe
 end
 
 function mod:load( options, version)
+	require(self.scriptPath .. "tips"):load(self.libs.modApiExt)
 	mod.icon = self.resourcePath .."img/mod_icon.png"
+	if options.resetTutorials and options.resetTutorials.enabled then
+		require(self.scriptPath .."libs/tutorialTips"):ResetAll()
+		options.resetTutorials.enabled = false
+	end
 end
 
 function mod:metadata()
@@ -235,6 +245,12 @@ function mod:metadata()
 		"Enable the Freezing prefix",
 		"Check to allow Vek to be given the Freezing prefix, making their weapon freeze anything it damages (default: true).",
 		{ enabled = true }
+	)
+	modApi:addGenerationOption(
+		"resetTutorials",
+		"Reset Tutorial Tooltips",
+		"Check to reset all tutorial tooltips for this profile.",
+		{ enabled = false }
 	)
 end
 

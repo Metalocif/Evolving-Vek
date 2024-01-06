@@ -148,6 +148,7 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 			GetCurrentMission():RemoveSpawnPoint(spawnData.location)
 			modApi:runLater(function()
 				GetCurrentMission():SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
+				Board:Ping(spawnData.location, COLOR_BLACK)
 			end)
 			GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 			break
@@ -172,7 +173,7 @@ local function HOOK_ProcessVekRetreat(mission, endFx, pawn)
 			if GAME.EvolvedVeks[i].Type == pawn:GetType() and GAME.EvolvedVeks[i].Prefix == prefix then GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining + 1 found = true break end
 		end
 		if not found then GAME.EvolvedVeks[#GAME.EvolvedVeks+1] = {Type = pawn:GetType(), Prefix = prefix, Remaining = 1} end
-		LOG("added a "..prefix.." "..pawn:GetType()..", we stored "..tostring(#GAME.EvolvedVeks).." different Vek.")
+		LOG("Added a "..prefix.." "..pawn:GetType()..", we stored "..tostring(#GAME.EvolvedVeks).." different Vek.")
 	end
 end
 

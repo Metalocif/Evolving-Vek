@@ -1,3 +1,6 @@
+v1.4.1
+- Added tutorial tips that explain what each prefix does when they first appear in game.
+
 v1.4
 - Prefixed enemy spawns are finally working.
 - Undying enemies have their corpses disappear if they die in water.

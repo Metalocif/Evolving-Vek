@@ -462,7 +462,7 @@ end
 
 --these prefixes are triggered by the GetWeapon function, which runs once at the start of movement
 --so they are effects that trigger at movement start
---I use a conditional hook to make two trigger at the end of movement instead
+--I used to have a conditional hook make two trigger at the end of movement instead, but that was buggy
 
 function CopyingMelee()
 	return Copying(false)

@@ -146,10 +146,14 @@ local function HOOK_VekSpawnAdded(mission, spawnData)
 	for i = 1, #GAME.EvolvedVeks do
 		if GAME.EvolvedVeks[i].Type == spawnData.type and GAME.EvolvedVeks[i].Remaining > 0 and _G[GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type].Name ~= "Missing Mod" then
 			GetCurrentMission():RemoveSpawnPoint(spawnData.location)
+			
 			modApi:runLater(function()
 				GetCurrentMission():SpawnPawn(spawnData.location, GAME.EvolvedVeks[i].Prefix..GAME.EvolvedVeks[i].Type)
 				Board:Ping(spawnData.location, COLOR_BLACK)
 			end)
+			local fx = SkillEffect()
+			fx:AddDelay(0.1)
+			Board:AddEffect(fx)
 			GAME.EvolvedVeks[i].Remaining = GAME.EvolvedVeks[i].Remaining - 1
 			break
 		end

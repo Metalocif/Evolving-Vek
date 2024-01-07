@@ -1,3 +1,7 @@
+v1.4.2
+- Added a missing tip for the Tyrannical prefix
+- Fixed the bug with prefixing emerging enemies for the third time or so.
+
 v1.4.1
 - Added tutorial tips that explain what each prefix does when they first appear in game.
 

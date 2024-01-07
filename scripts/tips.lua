@@ -34,6 +34,7 @@ tips:Add{id = "Tip_Groundbreaking",title = "Groundbreaking",text = "The Groundbr
 tips:Add{id = "Tip_Venomous",title = "Venomous",text = "The Venomous prefix makes a Vek fire an instant projectile applying A.C.I.D. when it queues its weapon."}
 tips:Add{id = "Tip_Frenzied",title = "Frenzied",text = "The Frenzied prefix makes a Vek deal 2 extra damage with its weapon, but have 1 less maximum HP."}
 tips:Add{id = "Tip_Freezing",title = "Freezing",text = "The Freezing prefix makes a Vek's weapon freeze all tiles it damages."}
+tips:Add{id = "Tip_Tyrannical",title = "Tyrannical",text = "The Tyrannical prefix grants a Psion a weak artillery weapon that will favor targeting units over buildings."}
 
 --Put the hooks in here for pawn creation
 local this = {}
@@ -45,7 +46,7 @@ end
 
 local function PawnCreated(mission, pawn)
 	if _G[pawn:GetType()].Prefixed then 
-		local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking","Venomous","Frenzied","Freezing"}
+		local prefixes = {"Stable","Fireproof","Smokeproof","Leaping","Armored","Heavy","Light","Volatile","Massive","Undying","Burrowing","Ruinous","Purifying","Healing","Spiteful","Brood","Splitting","Oozing","Infectious","Regenerating","Wrathful","Webbing","Cannibalistic","CopyingMelee","CopyingRanged","Mirroring","Pushing","Groundbreaking","Venomous","Frenzied","Freezing","Tyrannical"}
 		for _, prefix in ipairs(prefixes) do
 			if HasPrefix(pawn, prefix) then tips:Trigger("Tip_"..prefix, pawn:GetSpace()) end
 		end
